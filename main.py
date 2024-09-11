@@ -20,7 +20,7 @@ class TCPServer:
             response = self.handle_request(data)
             conn.sendall(response)
 
-            print(f"Client conneted {addr[0]}:{addr[1]}")
+            # print(f"Client conneted {addr[0]}:{addr[1]}")
             conn.close()
     
     def handle_request(self, data):
@@ -35,6 +35,16 @@ class HTTPServer(TCPServer):
     status_codes = {
         200: 'OK',
         404: 'Not Found',
+        501: 'Not Implemented'
+    }
+    routes = {
+        'GET': {
+            '/': lambda: '<h1>Hello World</h1>'
+        },
+        'POST': {},
+        'PUT': {},
+        'DELETE': {},
+
     }
 
     def response_headers(self, extra=None):
@@ -44,7 +54,7 @@ class HTTPServer(TCPServer):
             extra.update({'Date': date})
             self.headers.update(extra)
         else:
-            self.headers.update(date)
+            self.headers.update({'Date': date})
 
         headers = ''
         for key, value in self.headers.items():
@@ -58,17 +68,68 @@ class HTTPServer(TCPServer):
         return status.encode(self.format)
 
     def handle_request(self, data):
-        body = b'<h1>Hello World!</h1>'
+        req_raw = data.decode(self.format)
+        req_line = req_raw.split('\n')[0]
+        req_method = req_line.split(' ')[0]
+        req_path = req_line.split(' ')[1]
 
+        print(req_line)
+
+        # Checking invalid requests
+        if req_method not in self.routes.keys():
+            return self.HTTP_501_handler()
+        elif self.routes[req_method].get(req_path) == None:
+            return self.HTTP_404_handler()
+
+        body = self.routes[req_method][req_path]()
+        
+        if req_method == 'GET':
+            return self.HTTP_GET_handler(body=body.encode(self.format))
+
+    def route(self, method, path, func):
+        if self.routes.get(method) == None:
+            self.route[method] = {path: func}
+        else:
+            self.routes[method].update({path: func})
+    
+    def HTTP_GET_handler(self, body, status=200):
         content_length = {'Content-Length': len(body)}
-        status_line = self.response_status(200)
+        status_line = self.response_status(status)
+        headers = self.response_headers(content_length)
+
+        return b"".join([status_line, headers, b'\r\n', body])
+    
+    def HTTP_404_handler(self):
+        body = b'<h1>404 Not Found</h1>'
+        content_length = {'Content-Length': len(body)}
+        status_line = self.response_status(404)
+        headers = self.response_headers(content_length)
+
+        return b"".join([status_line, headers, b'\r\n', body])
+    
+    def HTTP_501_handler(self):
+        body = b'<h1>501 Not Implemented</h1>'
+        content_length = {'Content-Length': len(body)}
+        status_line = self.response_status(501)
         headers = self.response_headers(content_length)
 
         return b"".join([status_line, headers, b'\r\n', body])
 
+
+def mainPage():
+    # status = 200
+    body = '<center><h1>Home Page</h1></center>'
+    return body
+def testPage():
+    # status = 200
+    body = '<h1>test Page</h1>'
+    return body
+
 if __name__ == '__main__':
     server = HTTPServer()
     try:
+        server.route('GET', '/', mainPage)
+        server.route('GET', '/test', testPage)
         server.start()
     except KeyboardInterrupt:
         print(' Exiting...')

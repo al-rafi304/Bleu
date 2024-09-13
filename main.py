@@ -64,13 +64,13 @@ class HTTPServer(TCPServer):
 
 def mainPage(req, res):
     res.body('<center><h1>Home Page</h1></center>')
-    print(req.headers)
+    
     return res
 def testPage(req, res):
     if req.method == 'GET':
         res.body(f'<h1>Get request</h1>')
-    else:
-        res.body(f'<h1>Else request</h1>')
+    elif req.method == 'POST':
+        res.json({'test': 123, 'blabla': 1234})
     
     return res
 

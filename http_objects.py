@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import json
 
 HTTPStatus = {
     200: 'OK',
@@ -8,12 +9,13 @@ HTTPStatus = {
 
 
 class HTTPResponse:
-    def __init__(self, status=200, body='', headers=None):
+    def __init__(self, status=200, body='', headers=None, connection='keep-alive'):
         self.__body = body
         self.__headers = {
         'Server': 'BOSS',
         'Content-Type': 'text/html',
-        'Content-Length': len(self.__body)
+        'Content-Length': len(self.__body),
+        'Connection': connection
         }
         self.__format = 'utf-8'
         self.__status = status
@@ -41,6 +43,10 @@ class HTTPResponse:
             raise Exception(f'Status code {code} not implemented yet')
         self.__status = code
         return self
+    
+    def close_connection(self):
+        self.__headers['Connection'] = 'close'
+        return self
 
     def get_status_line(self):
         status = f'HTTP/1.1 {self.__status} {HTTPStatus[self.__status]}\r\n'
@@ -49,7 +55,14 @@ class HTTPResponse:
     def body(self, content):
         self.__body = content
         self.__headers['Content-Length'] = len(self.__body)
-        return self
+        # return self
+    
+    def json(self, content):
+        js = json.dumps(content)
+        self.__headers['Content-Type'] = 'application/json'
+        self.__headers['Content-Length'] = len(js)
+        self.__body = js
+
     
     def to_bytes(self):
         status_line = self.get_status_line().encode(self.__format)

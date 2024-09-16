@@ -55,14 +55,14 @@ class HTTPResponse:
     def body(self, content):
         self.__body = content
         self.__headers['Content-Length'] = len(self.__body)
-        # return self
+        return self
     
     def json(self, content):
         js = json.dumps(content)
         self.__headers['Content-Type'] = 'application/json'
         self.__headers['Content-Length'] = len(js)
         self.__body = js
-
+        return self
     
     def to_bytes(self):
         status_line = self.get_status_line().encode(self.__format)

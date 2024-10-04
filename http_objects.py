@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import json
+from urllib.parse import unquote
 
 HTTPStatus = {
     200: 'OK',
@@ -78,12 +79,15 @@ class HTTPResponse:
     
 class HTTPRequest:
     def __init__(self, raw_req):
+        # print(raw_req)
         self.__raw_req = raw_req
         self.__req_line = raw_req.split('\n')[0]
         self.__method = self.__req_line.split(' ')[0]
-        self.__path = self.__req_line.split(' ')[1]
+        self.__path = self.__req_line.split(' ')[1].split('?')[0]
+        self.__queries = self.__req_line.split(' ')[1].split('?')[1]
 
         self.__headers = {}
+        self.__query = {}
         self.__files = []       # Needs to be implemented
 
         for header in self.__raw_req.split('\r\n')[1:]:
@@ -99,12 +103,22 @@ class HTTPRequest:
 
             self.__headers[key] = value
         
+        for query in self.__queries.split('&'):
+            key = query.split('=')[0]
+            val = query.split('=')[1]
+
+            self.__query[key] = unquote(val)
+
+        
     @property
     def method(self):
         return self.__method
     @property
     def path(self):
         return self.__path
+    @property
+    def query(self):
+        return self.__query
     @property
     def headers(self):
         return self.__headers

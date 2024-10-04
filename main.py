@@ -70,6 +70,7 @@ def mainPage(req, res):
 
 def testPage(req, res):
     res.body(f'<h1>Test Page</h1>')
+    print(req.query['t'])
     return res
 
 def postPage(req, res):

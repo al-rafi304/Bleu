@@ -84,32 +84,36 @@ class HTTPRequest:
         self.__req_line = raw_req.split('\n')[0]
         self.__method = self.__req_line.split(' ')[0]
         self.__path = self.__req_line.split(' ')[1].split('?')[0]
-        self.__queries = self.__req_line.split(' ')[1].split('?')[1]
-
-        self.__headers = {}
-        self.__query = {}
+        self.__headers = self.__extract_headers()
+        self.__query = self.__extract_queries()
         self.__files = []       # Needs to be implemented
 
-        for header in self.__raw_req.split('\r\n')[1:]:
+    def __extract_headers(self):
+        headers = {}
+        for header in self.__raw_req.split('\r\n\r\n')[0].split('\r\n')[1:]:
             if header == '':
                 continue
             key = header.split(':')[0].replace('-', '_').upper()
             value = header.split(':')[1].strip()
 
             if key == 'Host':
-                self.__headers[key] = value.split(':')[0]
-                self.__headers['SERVER_PORT'] = value.split(':')[1]
+                headers[key] = value.split(':')[0]
+                headers['SERVER_PORT'] = value.split(':')[1]
                 continue
 
-            self.__headers[key] = value
-        
-        for query in self.__queries.split('&'):
-            key = query.split('=')[0]
-            val = query.split('=')[1]
+            headers[key] = value
+        return headers
+    
+    def __extract_queries(self):
+        queries = {}
+        if '?' in self.__req_line.split(' ')[1]:
+            for query in self.__req_line.split(' ')[1].split('?')[1].split('&'):
+                key = query.split('=')[0]
+                val = query.split('=')[1]
+                queries[key] = unquote(val)
 
-            self.__query[key] = unquote(val)
+        return queries
 
-        
     @property
     def method(self):
         return self.__method

@@ -74,6 +74,7 @@ def testPage(req, res):
     return res
 
 def postPage(req, res):
+    print(f"Body: {req.body}")
     data = {'id': 1, 'count': {'A': 3, 'B': 9}}
     return res.json(data)
 

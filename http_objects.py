@@ -79,13 +79,13 @@ class HTTPResponse:
     
 class HTTPRequest:
     def __init__(self, raw_req):
-        # print(raw_req)
         self.__raw_req = raw_req
         self.__req_line = raw_req.split('\n')[0]
         self.__method = self.__req_line.split(' ')[0]
         self.__path = self.__req_line.split(' ')[1].split('?')[0]
         self.__headers = self.__extract_headers()
         self.__query = self.__extract_queries()
+        self.__body = self.__extract_body(raw_body=''.join(raw_req.split('\r\n\r\n')[1:]))
         self.__files = []       # Needs to be implemented
 
     def __extract_headers(self):
@@ -113,6 +113,20 @@ class HTTPRequest:
                 queries[key] = unquote(val)
 
         return queries
+    
+    # Supports: plain text, json, form-urlencoded
+    def __extract_body(self, raw_body):
+        body = {}
+        if self.__headers.get('CONTENT_TYPE') in ['text/plain', 'application/x-www-form-urlencoded']:
+            for params in raw_body.split('&'):
+                key = params.split('=')[0]
+                val = unquote(params.split('=')[1])
+                body[key] = val
+        elif self.__headers.get('CONTENT_TYPE') == 'application/json':
+            body = json.loads(raw_body)
+        
+        return body
+
 
     @property
     def method(self):
@@ -126,6 +140,9 @@ class HTTPRequest:
     @property
     def headers(self):
         return self.__headers
+    @property
+    def body(self):
+        return self.__body
     @property
     def line(self):
         return self.__req_line

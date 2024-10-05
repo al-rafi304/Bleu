@@ -70,7 +70,7 @@ def mainPage(req, res):
 
 def testPage(req, res):
     res.body(f'<h1>Test Page</h1>')
-    print(f"Path: {req.path}\nQuery:{req.query}\nHeaders:{req.headers}")
+    print(f"Path: {req.path}\nQuery:{req.query}\nHeaders:{req.header}")
     return res
 
 def postPage(req, res):

@@ -83,10 +83,11 @@ class HTTPRequest:
         self.__req_line = raw_req.split('\n')[0]
         self.__method = self.__req_line.split(' ')[0]
         self.__path = self.__req_line.split(' ')[1].split('?')[0]
-        self.__header = self.__extract_header()
-        self.__query = self.__extract_queries()
-        self.__body = self.__extract_body(raw_body=''.join(raw_req.split('\r\n\r\n')[1:]))
-        self.__files = []       # Needs to be implemented
+        self.header = self.__extract_header()
+        self.query = self.__extract_queries()
+        self.params = {}
+        self.body = self.__extract_body(raw_body=''.join(raw_req.split('\r\n\r\n')[1:]))
+        self.files = []       # Needs to be implemented
 
     def __extract_header(self):
         headers = {}
@@ -134,15 +135,6 @@ class HTTPRequest:
     @property
     def path(self):
         return self.__path
-    @property
-    def query(self):
-        return self.__query
-    @property
-    def header(self):
-        return self.__header
-    @property
-    def body(self):
-        return self.__body
     @property
     def line(self):
         return self.__req_line

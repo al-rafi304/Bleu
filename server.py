@@ -1,6 +1,6 @@
 import socket
 import threading
-from time import sleep
+import re
 from http_objects import HTTPResponse, HTTPRequest
 
 class TCPServer:
@@ -41,10 +41,16 @@ class HTTPServer(TCPServer):
         'POST': {},
         'PUT': {},
         'DELETE': {},
+        'PATCH': {},
+        'OPTIONS': {},
+        'HEAD': {},
+        'CONNECT': {},
+        'TRACE': {}
     }
 
     def handle_request(self, data):
         req_raw = data.decode(self.format)
+        # print(f'---------------------Request-----------------\n{req_raw}')
 
         response = HTTPResponse()
         request = HTTPRequest(req_raw)
@@ -52,10 +58,15 @@ class HTTPServer(TCPServer):
         # Checking invalid requests
         if request.method not in self.__routes.keys():
             return response.status(501).body('<h1>501 Not Implemented</h1>')
-        elif self.__routes[request.method].get(request.path) == None:
-            return response.status(404).body('<h1>404 Not Found</h1>')
 
-        return self.__routes[request.method][request.path](request, response)
+        # Resolving handler and route parameters for request
+        handler, params = self.__match_route(request.method, request.path)
+        request.params = params
+
+        if handler == None:
+            print(params)
+            return response.status(404).body('<h1>404 Not Found</h1>')
+        return handler(request, response)
 
     def route(self, method, path, func):
         if self.__routes.get(method) == None:
@@ -63,32 +74,23 @@ class HTTPServer(TCPServer):
         else:
             self.__routes[method].update({path: func})
 
+    def __match_route(self, method, path):
+        for route_path, handler in self.__routes[method].items():
 
-# def mainPage(req, res):
-#     res.body('<center><h1>Home Page</h1></center>')
-#     return res
+            # Extract route parameters (e.g. id in :id) from the route_path
+            param_names = re.findall(r':([^\/]+)', route_path)
+            # Converts route path with params into regular expression
+            # turns a route path like /users/:id into a regex pattern 
+            # like /users/([^\/]+), which can be used to match URLs like /users/123
+            route_regex = re.sub(r':[^\/]+', r'([^\/]+)', route_path)
+            # adding the start (^) and end ($) anchors so that entire URL must match
+            route_regex = f'^{route_regex}$'
 
-# def testPage(req, res):
-#     res.body(f'<h1>Test Page</h1>')
-#     print(f"Path: {req.path}\nQuery:{req.query}\nHeaders:{req.header}")
-#     return res
+            match = re.match(route_regex, path)
+            if match:
+                params_values = match.groups()
+                params = dict(zip(param_names, params_values))
+                return handler, params
+        
+        return None, {}
 
-# def postPage(req, res):
-#     print(f"Body: {req.body}")
-#     data = {'id': 1, 'count': {'A': 3, 'B': 9}}
-#     return res.json(data)
-
-# def busyPage(req, res):
-#     sleep(5)
-#     return res.body("<h1>Now I'm free</h1>")
-
-# if __name__ == '__main__':
-#     server = HTTPServer(port=8888)
-#     try:
-#         server.route('GET', '/', mainPage)
-#         server.route('GET', '/test', testPage)
-#         server.route('POST', '/post', postPage)
-#         server.route('GET', '/busy', busyPage)
-#         server.start()
-#     except KeyboardInterrupt:
-#         print(' Exiting...')

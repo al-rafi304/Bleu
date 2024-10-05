@@ -11,7 +11,7 @@ def testPage(req, res):
     return res
 
 def postPage(req, res):
-    print(f"Body: {req.body}")
+    print(f"Path: {req.path}\nBody: {req.body}\nQuery:{req.query}\nParams:{req.params}")
     data = {'id': 1, 'count': {'A': 3, 'B': 9}}
     return res.json(data)
 
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     try:
         server.route('GET', '/', mainPage)
         server.route('GET', '/test', testPage)
-        server.route('POST', '/post', postPage)
+        server.route('POST', '/post/:id', postPage)
         server.route('GET', '/busy', busyPage)
         server.start()
     except KeyboardInterrupt:

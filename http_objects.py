@@ -118,12 +118,12 @@ class HTTPRequest:
     # Supports: plain text, json, form-urlencoded
     def __extract_body(self, raw_body):
         body = {}
-        if self.__header.get('CONTENT_TYPE') in ['text/plain', 'application/x-www-form-urlencoded']:
+        if self.header.get('CONTENT_TYPE') in ['text/plain', 'application/x-www-form-urlencoded']:
             for params in raw_body.split('&'):
                 key = params.split('=')[0]
                 val = unquote(params.split('=')[1])
                 body[key] = val
-        elif self.__header.get('CONTENT_TYPE') == 'application/json':
+        elif self.header.get('CONTENT_TYPE') == 'application/json':
             body = json.loads(raw_body)
         
         return body

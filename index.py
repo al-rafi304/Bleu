@@ -1,16 +1,18 @@
-from server import HTTPServer
+from server import HTTPServer, HTTPResponse, HTTPRequest
 from time import sleep
 
-def mainPage(req, res):
+def mainPage(req:HTTPResponse, res:HTTPResponse):
     res.body('<center><h1>Home Page</h1></center>')
     return res
 
-def testPage(req, res):
+def testPage(req:HTTPResponse, res:HTTPResponse):
+    res.set_cookie(name='id', value='123', httpOnly=True, secure=True)
     res.body(f'<h1>Test Page</h1>')
-    print(f"Path: {req.path}\nQuery:{req.query}\nHeaders:{req.header}")
+
+    # print(f"Path: {req.path}\nQuery:{req.query}\nHeaders:{req.header}")
     return res
 
-def postPage(req, res):
+def postPage(req:HTTPResponse, res:HTTPResponse):
     print(f"Path: {req.path}\nBody: {req.body}\nQuery:{req.query}\nParams:{req.params}")
     data = {'id': 1, 'count': {'A': 3, 'B': 9}}
     return res.json(data)

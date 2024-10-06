@@ -9,35 +9,71 @@ HTTPStatus = {
 }
 
 
+class Cookie:
+    def __init__(self):
+        self.__cookie = {}
+
+    def set(self, name, value, maxAge=None,expires=None,
+            domain=None, path='/', httpOnly=None, sameSite='Lax', secure=None):
+        
+        cookie = f'Set-Cookie: {name}={value}; Path={path}'
+
+        if maxAge:
+            cookie += f'; Max-Age={maxAge}'
+        if expires:
+            cookie += f'; Expires={expires}'
+        if domain:
+            cookie += f'; Domain={domain}'
+        if httpOnly:
+            cookie += f'; HttpOnly'
+        if secure:
+            cookie += f'; Secure'
+
+        if sameSite == None:
+            cookie += '; SameSite=None'
+            if not secure:
+                cookie += '; Secure'
+        else:
+            cookie += f'; SameSite={sameSite}'
+        
+        
+        self.__cookie[name] = cookie
+
+    @property
+    def isEmpty(self):
+        if self.__cookie == {}:
+            return True
+        return False
+
+    def get(self, name):
+        return self.__cookie[name]
+    
+    def get_all(self):
+        return self.__cookie
+    
+    def to_string(self):
+        return '\r\n'.join([self.__cookie[key] for key in self.__cookie.keys()])
+        
+
 class HTTPResponse:
-    def __init__(self, status=200, body='', headers=None, connection='keep-alive'):
+    def __init__(self, status=200, body=''):
         self.__body = body
         self.__headers = {
         'Server': 'BOSS',
+        'Date': datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT"),
         'Content-Type': 'text/html',
         'Content-Length': len(self.__body),
-        'Connection': connection
+        'Connection': 'keep-alive'
         }
         self.__format = 'utf-8'
         self.__status = status
+        self.__cookies = Cookie()
 
-        self.add_headers(headers)
+    def set_headers(self, headers:dict):
+        self.__headers.update(headers)
     
-    def add_headers(self, extra=None):
-        date = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
-        if extra:
-            extra.update({'Date': date})
-            self.__headers.update(extra)
-        else:
-            self.__headers.update({'Date': date})
-        return self
-
-    def get_headers(self):
-        headers = ''
-        for key, value in self.__headers.items():
-            h = f'{key}: {value}\r\n'
-            headers += h
-        return headers
+    def set_cookie(self, name, value, **kwargs):
+        self.__cookies.set(name, value, **kwargs)
     
     def status(self, code):
         if code not in HTTPStatus.keys():
@@ -48,10 +84,6 @@ class HTTPResponse:
     def close_connection(self):
         self.__headers['Connection'] = 'close'
         return self
-
-    def get_status_line(self):
-        status = f'HTTP/1.1 {self.__status} {HTTPStatus[self.__status]}\r\n'
-        return status
     
     def body(self, content):
         self.__body = content
@@ -66,14 +98,25 @@ class HTTPResponse:
         return self
     
     def to_bytes(self):
-        status_line = self.get_status_line().encode(self.__format)
-        headers = self.get_headers().encode(self.__format)
+        status_line = self.__formatted_status_line().encode(self.__format)
+        headers = self.__formatted_headers().encode(self.__format)
         body = self.__body.encode(self.__format)
-        return b"".join([status_line, headers, b'\r\n', body])
-    
+        return b"".join([status_line, headers, b'\r\n\r\n', body])
+
+    def __formatted_headers(self):
+        headers = '\r\n'.join([f'{key}: {value}' for key, value in self.__headers.items()])
+        if not self.__cookies.isEmpty:
+            headers += '\r\n' + self.__cookies.to_string()
+
+        return headers
+
+    def __formatted_status_line(self):
+        status = f'HTTP/1.1 {self.__status} {HTTPStatus[self.__status]}\r\n'
+        return status
+
     def __str__(self):
-        status_line = self.get_status_line()
-        headers = self.get_headers()
+        status_line = self.__formatted_status_line()
+        headers = self.__formatted_headers()
         body = self.__body
         return "".join([status_line, headers, '\r\n', body])
     

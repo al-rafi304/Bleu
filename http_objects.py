@@ -53,6 +53,17 @@ class Cookie:
     
     def to_string(self):
         return '\r\n'.join([self.__cookie[key] for key in self.__cookie.keys()])
+    
+    @staticmethod
+    def parse(raw_cookies):
+        if raw_cookies == None:
+            return {}
+
+        cookies = {}
+        for cookie in raw_cookies.split(';'):
+            name, value = cookie.strip().split('=')
+            cookies[name] = value
+        return cookies
         
 
 class HTTPResponse:
@@ -127,6 +138,7 @@ class HTTPRequest:
         self.__method = self.__req_line.split(' ')[0]
         self.__path = self.__req_line.split(' ')[1].split('?')[0]
         self.header = self.__extract_header()
+        self.cookies = Cookie.parse(self.header.get('COOKIE'))
         self.query = self.__extract_queries()
         self.params = {}
         self.body = self.__extract_body(raw_body=''.join(raw_req.split('\r\n\r\n')[1:]))

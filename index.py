@@ -1,4 +1,4 @@
-from server import HTTPServer, HTTPResponse, HTTPRequest
+from core.server import HTTPServer, HTTPResponse, HTTPRequest
 from time import sleep
 
 def mainPage(req:HTTPRequest, res:HTTPResponse):

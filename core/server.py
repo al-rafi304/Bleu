@@ -1,7 +1,8 @@
 import socket
 import threading
 import re
-from http_objects import HTTPResponse, HTTPRequest
+from .request import HTTPRequest
+from .response import HTTPResponse
 
 class TCPServer:
     def __init__(self, port:int, ip='127.0.0.1'):

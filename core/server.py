@@ -42,11 +42,7 @@ class HTTPServer(TCPServer):
         'POST': {},
         'PUT': {},
         'DELETE': {},
-        'PATCH': {},
-        'OPTIONS': {},
-        'HEAD': {},
-        'CONNECT': {},
-        'TRACE': {}
+        'PATCH': {}
     }
 
     def handle_request(self, data):

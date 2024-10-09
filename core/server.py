@@ -10,18 +10,20 @@ class TCPServer:
         self.port = port
     
     def start(self):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)      # Allows resusable sockets
-        sock.bind((self.ip, self.port))
-        sock.listen()
-        print(f"Server listening at {self.ip}:{self.port}")
-        
-        while True:
-            conn, addr = sock.accept()
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)      # Allows resusable sockets
+            sock.bind((self.ip, self.port))
+            sock.listen()
+            print(f"Server listening at {self.ip}:{self.port}")
+            while True:
+                conn, addr = sock.accept()
 
-            # Threading
-            th = threading.Thread(target=self.handle_client, args=(conn, addr))
-            th.start()
+                # Threading
+                th = threading.Thread(target=self.handle_client, args=(conn, addr))
+                th.start()
+        except KeyboardInterrupt:
+            print('\nServer Terminated!')
     
     def handle_client(self, conn, addr):
         data = conn.recv(1024)

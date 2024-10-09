@@ -25,11 +25,10 @@ def busyPage(req, res):
 
 if __name__ == '__main__':
     server = HTTPServer(port=8888)
-    try:
-        server.route('GET', '/', mainPage)
-        server.route('GET', '/test', testPage)
-        server.route('POST', '/post/:id', postPage)
-        server.route('GET', '/busy', busyPage)
-        server.start()
-    except KeyboardInterrupt:
-        print(' Exiting...')
+
+    server.route('GET', '/', mainPage)
+    server.route('GET', '/test', testPage)
+    server.route('POST', '/post/:id', postPage)
+    server.route('GET', '/busy', busyPage)
+    
+    server.start()

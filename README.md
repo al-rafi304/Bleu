@@ -1,8 +1,8 @@
 # Intro
 
-A Python backend framework inspired by Express.js, built to handle HTTP requests, routing, and session management with ease. Every component is made from scratch including the HTTP server and the user workflow for this framwork is similiar to Express.js.
+Hazy is a Python backend framework inspired by Express.js, built to handle HTTP requests, routing, and session management with ease. Every component is made from scratch including the HTTP server and the user workflow for this framwork is similiar to Express.js.
 
-**Note: This is not a fully fledged project and it's not supposed to be. I started this project only to learn more about HTTP and got curious how frameworks work. There are high possibilities of security vulnerabilites as of now**
+**Note: This is not a fully fledged project and it's not supposed to be. I started this project only to learn more about HTTP and got curious about how frameworks work. There are high possibilities of bugs and security vulnerabilites as of now**
 
 ## Features
 
@@ -24,7 +24,7 @@ server = HTTPServer(port=8080)
 
 # Define route handlers
 def home(req, res):
-    res.body('<h1>Welcome to MyPythonFramework!</h1>')
+    res.body('<h1>Welcome to Hazy!</h1>')
     return res
 
 # Define routes 

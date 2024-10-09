@@ -46,6 +46,7 @@ class HTTPServer(TCPServer):
         'DELETE': {},
         'PATCH': {}
     }
+    __middlewares = []
 
     def handle_request(self, data):
         req_raw = data.decode(self.format)
@@ -59,21 +60,44 @@ class HTTPServer(TCPServer):
             return response.status(501).body('<h1>501 Not Implemented</h1>')
 
         # Resolving handler and route parameters for request
-        handler, params = self.__match_route(request.method, request.path)
+        handler, params = self.__get_handler(request.method, request.path)
         request.params = params
 
+        # Triggering Middlewares
+        for midd in self.__middlewares:
+            try:
+                midd(request, response)
+            except Exception as e:
+                print(f"Error in middleware: {e}")
+                response.status(500).body("<h1>Error occurred</h1>")
+                return response
+
+        # No handler found for requested route
         if handler == None:
-            print(params)
             return response.status(404).body('<h1>404 Not Found</h1>')
-        return handler(request, response)
+        
+        # Trigger Handler
+        try:
+            response = handler(request, response)
+        except Exception as e:
+            print(f"Error in route handler: {e}")
+            response.status(500).body("<h1>Error occurred</h1>")
+            return response
+        
+        return response
 
-    def route(self, method, path, func):
+    def use(self, middleware):
+        if not callable(middleware):
+            raise TypeError("Middleware is not a callable function!")
+        self.__middlewares.append(middleware)
+
+    def route(self, method, path, handler):
         if self.__routes.get(method) == None:
-            self.route[method] = {path: func}
+            self.route[method] = {path: handler}
         else:
-            self.__routes[method].update({path: func})
+            self.__routes[method].update({path: handler})
 
-    def __match_route(self, method, path):
+    def __get_handler(self, method, path):
         for route_path, handler in self.__routes[method].items():
 
             # Extract route parameters (e.g. id in :id) from the route_path

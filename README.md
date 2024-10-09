@@ -6,12 +6,13 @@ Bleu is a Python backend framework inspired by Express.js, built to handle HTTP 
 
 ## Features
 
+- **Threaded Request Handling**: Uses threading to handle multiple client connections concurrently.
 - **Routing**: Supports HTTP methods like `GET`, `POST`, `PUT`, `DELETE`, and custom routes with parameters.
 - **Request Handling**: Provides `HTTPRequest` and `HTTPResponse` classes to handle client requests and generate responses.
 - **Route Parameters**: Easily define route parameters (e.g., `/product/:id`) and access them directly in your handler functions.
 - **Query Parsing**: Automatically parses query parameters, making them accessible as part of the request object.
 - **Cookie Management**: Simplified cookie handling using the `Set-Cookie` header, including options for `httpOnly`, `secure`, etc.
-- **Threaded Request Handling**: Uses threading to handle multiple client connections concurrently.
+- **Middlewares**: Supports global middleware functions for request modification, authentication, logging, error handling, etc.
 
 ## Usage
 
@@ -41,9 +42,29 @@ For a more detailed example, check out `index.py` in the repo.
 
 ## API Reference
 ### Routing
- - Defining Routes: Use `server.route(method, path, handler)` to add routes
- - Route Parameters: Define routes with parameters using the format `your/route/:param`, and access them using `req.params` in the route handler
- - Supported Methods: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`
+ - **Define Routes:** Use `server.route(method, path, handler)` to add routes.
+ - **Route Parameters:** Define routes with parameters using the format `'route/:name'`, and access them using `req.params.get('name')` in the route handler.
+ - **Supported Methods:** `GET`, `POST`, `PUT`, `DELETE`, `PATCH`.
+ - **Example:** Adding route with parameter:
+    ```python
+    def handler(req, res):
+        print(req.params.get('id'))
+        return res
+    
+    server.route('GET', '/user/:id', handler)
+    ```
+
+### Middleware
+ - **Define Middleware Function:** The function needs to have a request & response parameter and does not need to return anything. 
+ - **Add Global Middleware:** Use `server.use(middleware)` to add middlewares.
+ - **Order of Execution:** For global middlewaresm, they will get executed in the order they were added.
+ - **Example:** Adding a new parameter in request object using middleware:
+    ```python
+    def example(req, res):
+        req.params['Middleware'] = True
+    
+    server.use(example)
+    ```
 
 ### Request Object
  - `req.body`: Access request body. *Current supported content types are: `text/plain`, `application/json`, `application/x-www-form-urlencoded`*

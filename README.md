@@ -55,13 +55,14 @@ For a more detailed example, check out `index.py` in the repo.
     ```
 
 ### Middleware
- - **Define Middleware Function:** The function needs to have a request & response parameter and does not need to return anything. 
+ - **Define Middleware Function:** The middleware function accepts arguments: `request`, `response`, and `next`. It needs to return `next()` to call the next middleware and continue the chain. However, a `response` object can also be returned in which case, it will stop the middleware chain and prevent the the route handler from executing.
  - **Add Global Middleware:** Use `server.use(middleware)` to add middlewares.
- - **Order of Execution:** For global middlewaresm, they will get executed in the order they were added.
- - **Example:** Adding a new parameter in request object using middleware:
+ - **Order of Execution:** Middlewares will get executed in the order they were added.
+ - **Example:** Adding a new attribute in request object using middleware:
     ```python
-    def example(req, res):
-        req.params['Middleware'] = True
+    def example(req, res, next):
+        req.hasMiddleware = True
+        return next()
     
     server.use(example)
     ```

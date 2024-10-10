@@ -1,29 +1,32 @@
-from core.server import HTTPServer, HTTPResponse, HTTPRequest
+from core.server import HTTPServer
 
-def mainPage(req:HTTPRequest, res:HTTPResponse):
+
+def mainPage(req, res):
     res.body('<center><h1>Home Page</h1></center>')
     return res
 
-def testPage(req:HTTPRequest, res:HTTPResponse):
+def testPage(req, res):
     res.set_cookie(name='id', value='123', httpOnly=True, secure=True)
     res.set_cookie(name='name', value='rafi', httpOnly=True, secure=True)
-
+    
     res.body(f'<h1>Test Page</h1>{req.path} <br>Cookies: {req.cookies} <br>Query: {req.query} <br>Params: {req.params}')
 
     return res
 
-def postPage(req:HTTPRequest, res:HTTPResponse):
+def postPage(req, res):
     print(f"Path: {req.path}\nBody: {req.body}\nQuery:{req.query}\nParams:{req.params}")
     data = {'id': 1, 'count': {'A': 3, 'B': 9}}
     return res.json(data)
 
 # Demo for authentication middleware 
-def check_auth(req, res):
+def check_auth(req, res, next):
     req.params['Authenticated'] = False
     username = req.query.get('username')
     password = req.query.get('password')
     if username == 'peter' and password == 'spiderman':
         req.params['Authenticated'] = True
+    
+    return next()
 
 def authorizedPage(req, res):
     if not req.params.get('Authenticated'):

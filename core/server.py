@@ -1,8 +1,8 @@
 import socket
 import threading
 import re
-from .request import HTTPRequest
-from .response import HTTPResponse
+from core.request import HTTPRequest
+from core.response import HTTPResponse
 
 class TCPServer:
     def __init__(self, port:int, ip='127.0.0.1'):
@@ -36,17 +36,21 @@ class TCPServer:
         return response.status(200).body('<h1>TCP Server running</h1>')
 
 class HTTPServer(TCPServer):
-    format = 'utf-8'
-    __routes = {
-        'GET': {
-            '/': lambda: '<h1>Hello World</h1>'
-        },
-        'POST': {},
-        'PUT': {},
-        'DELETE': {},
-        'PATCH': {}
-    }
-    __middlewares = []
+    def __init__(self, port:int, ip='127.0.0.1'):
+        super().__init__(port, ip)
+
+        self.format = 'utf-8'
+        self.__routes = {
+            'GET': {
+                '/': lambda: '<h1>Hello World</h1>'
+            },
+            'POST': {},
+            'PUT': {},
+            'DELETE': {},
+            'PATCH': {}
+        }
+        self.__middlewares = []
+
 
     def handle_request(self, data):
         req_raw = data.decode(self.format)
@@ -63,33 +67,42 @@ class HTTPServer(TCPServer):
         handler, params = self.__get_handler(request.method, request.path)
         request.params = params
 
-        # Triggering Middlewares
-        for midd in self.__middlewares:
-            try:
-                midd(request, response)
-            except Exception as e:
-                print(f"Error in middleware: {e}")
-                response.status(500).body("<h1>Error occurred</h1>")
-                return response
-
         # No handler found for requested route
         if handler == None:
             return response.status(404).body('<h1>404 Not Found</h1>')
         
-        # Trigger Handler
-        try:
-            response = handler(request, response)
-        except Exception as e:
-            print(f"Error in route handler: {e}")
-            response.status(500).body("<h1>Error occurred</h1>")
-            return response
-        
+        response = self.__invoke_handlers(request, response, handler)
         return response
 
     def use(self, middleware):
         if not callable(middleware):
             raise TypeError("Middleware is not a callable function!")
         self.__middlewares.append(middleware)
+
+    def __invoke_handlers(self, request, response, handler, curr_middleware=0):
+
+        # Calling Request Handler (Recursion Base Case)
+        if curr_middleware >= len(self.__middlewares):
+            try:
+                response = handler(request, response)
+                return response
+            except Exception as e:
+                print(f"Error in route handlere: {e}")
+                response.status(500).body("<h1>Error occurred</h1>")
+                return response
+            
+
+        middleware = self.__middlewares[curr_middleware]
+        def next_middleware():
+            return self.__invoke_handlers(request, response, handler, curr_middleware+1)
+        
+        # Calling Middleware
+        try:
+            return middleware(request, response, next_middleware)
+        except Exception as e:
+            print(f"Error in middleware: {e}")
+            response.status(500).body("<h1>Error occurred</h1>")
+            return response
 
     def route(self, method, path, handler):
         if self.__routes.get(method) == None:

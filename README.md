@@ -13,6 +13,7 @@ Bleu is a Python backend framework inspired by Express.js, built to handle HTTP 
 - **Query Parsing**: Automatically parses query parameters, making them accessible as part of the request object.
 - **Cookie Management**: Simplified cookie handling using the `Set-Cookie` header, including options for `httpOnly`, `secure`, etc.
 - **Middlewares**: Supports global middleware functions for request modification, authentication, logging, error handling, etc.
+- **Session Support**: Provides a `SessionManager` that handles sessions and stores them in-memory.
 
 ## Usage
 
@@ -65,6 +66,26 @@ For a more detailed example, check out `index.py` in the repo.
         return next()
     
     server.use(example)
+    ```
+
+### Session
+ - **Enabling Sessions:** Using the `SessionManager` class, a central session handler can be created. It can take an `expire` argument to expire the session cookie (default expire value is 86400). A method `SessionManager.middleware()` is provided which needs to be used as a middleware to enable session handling. The middleware creates a session and attaches it to `request` object if no cookie named *`session`* is passed in the header or the session has expired.
+    ```python
+    from core.session import SessionManager
+
+    session = SessionManager(expire=3600)
+    server.use(session.middleware)
+    ```
+ - **Access:** In route handlers or middlewares, sessions can be accessed via `req.session`. Setting and receiving data of a session is done by `req.session[key]`. It also provided a get function `req.session.get()` which will return `None` when key is not found.
+    ```python
+    req.session['foo'] = 'bar'
+    x = req.session['foo']
+    x = req.session.get('foo')  # Recommended
+    session_id = req.session.id
+    ```
+ - **Destroy:** Using `req.session.destroy()` will destroy the current session and any data along with it. The `destroy()` function will not unset the `req.session` attribute but return `None`. So it's recommended to overwrite `req.session` while destroying.
+    ```python
+    req.session = req.session.destroy()
     ```
 
 ### Request Object

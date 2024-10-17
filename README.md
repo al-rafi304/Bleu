@@ -68,6 +68,29 @@ For a more detailed example, check out `index.py` in the repo.
     server.use(example)
     ```
 
+### Cookie
+ - **Access**: Every request and response object has a cookie property which can be access via `req.cookie` or `res.cookie`. The request cookie property is a dictionary that hold the cookie data. The response cookie property holds a Cookie class.
+ - **Set Cookies:** `res.cookies.set()` method can be called to set cookies in the response header.
+    ```python
+    res.cookie.set(name='sessionId', value='123456', httpOnly=True, secure=True)
+    ```
+    The function takes the following arguments:
+    - `name` *(str)*: The name of the cookie.
+    - `value` *(str)*: The value to be stored in the cookie.
+    - `maxAge` *(int, optional)*: Maximum age of the cookie in seconds. Defaults to `None`.
+    - `expires` *(str, optional)*: Expiration date in GMT format (e.g., `'Wed, 21 Oct 2024 07:28:00 GMT'`). Defaults to `None`.
+    - `domain` *(str, optional)*: The domain for which the cookie is valid. Defaults to `None`.
+    - `path` *(str, optional)*: The path for which the cookie is valid. Defaults to `None`.
+    - `httpOnly` *(bool, optional)*: If `True`, the cookie will be inaccessible via JavaScript. Defaults to `None`.
+    - `sameSite` *(str, optional)*: Controls whether the cookie is sent with cross-site requests. Can be `'Lax'`, `'Strict'`, or `'None'`. Defaults to `'Lax'`.
+    - `secure` *(bool, optional)*: If `True`, the cookie will only be sent over HTTPS. Defaults to `None`.
+ - **Get Cookies:** The cookie class provides methods to retrive cookies from response. For response, it stores the cookies in a dictionary.
+    - `res.cookies.get(name)`: Returns a `dictionary` containing all the parameters of a cookie. If name is invalide, it returns `None`.
+    - `res.cookies[name]`: Similar to get method, but it will throw error for invalid cookie name.
+    - `res.cookies.all()`: Returns all the cookies in a dictionary where the name of the cookie is a key.
+    -  `res.cookies.isEmpty`: Return a bool based on whether the response have any cookies or not.
+
+
 ### Session
  - **Enabling Sessions:** Using the `SessionManager` class, a central session handler can be created. It can take an `expire` argument to expire the session cookie (default expire value is 86400). A method `SessionManager.middleware()` is provided which needs to be used as a middleware to enable session handling. The middleware creates a session and attaches it to `request` object if no cookie named *`session`* is passed in the header or the session has expired.
     ```python

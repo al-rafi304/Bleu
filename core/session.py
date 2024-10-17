@@ -68,10 +68,10 @@ class SessionManager:
             if self.expire < time.time() - session.created_at:
                 self.destroy_session(session.id)
                 session = self.create_session()
-                res.set_cookie(name='session', value=session.id, maxAge=self.expire)
+                res.cookies.set(name='session', value=session.id, maxAge=self.expire)
         else:
             session = self.create_session()
-            res.set_cookie(name='session', value=session.id, maxAge=self.expire)
+            res.cookies.set(name='session', value=session.id, maxAge=self.expire)
         
         req.session = session
 

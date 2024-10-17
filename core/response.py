@@ -15,13 +15,10 @@ class HTTPResponse:
         }
         self.__format = 'utf-8'
         self.__status = status
-        self.__cookies = Cookie()
+        self.cookies = Cookie()
 
     def set_headers(self, headers:dict):
         self.__headers.update(headers)
-    
-    def set_cookie(self, name, value, **kwargs):
-        self.__cookies.set(name, value, **kwargs)
     
     def status(self, code):
         if code not in HTTPStatus.keys():
@@ -53,8 +50,8 @@ class HTTPResponse:
 
     def __formatted_headers(self):
         headers = '\r\n'.join([f'{key}: {value}' for key, value in self.__headers.items()])
-        if not self.__cookies.isEmpty:
-            headers += '\r\n' + self.__cookies.to_string()
+        if not self.cookies.isEmpty:
+            headers += '\r\n' + self.cookies.to_string()
 
         return headers
 

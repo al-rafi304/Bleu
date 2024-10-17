@@ -8,11 +8,10 @@ def mainPage(req, res):
     return res
 
 def testPage(req, res):
-    res.set_cookie(name='id', value='123', httpOnly=True, secure=True)
-    res.set_cookie(name='name', value='rafi', httpOnly=True, secure=True)
+    res.cookies.set(name='id', value='123', httpOnly=True, secure=True)
+    res.cookies.set(name='name', value='rafi', httpOnly=True, secure=True)
     
     res.body(f'<h1>Test Page</h1>{req.path} Session: {req.session.id}<br>Session Data: {req.session.data} <br>Cookies: {req.cookies} <br>Query: {req.query} <br>Params: {req.params}')
-
     return res
 
 def postPage(req, res):

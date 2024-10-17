@@ -15,6 +15,21 @@ Bleu is a Python backend framework inspired by Express.js, built to handle HTTP 
 - **Middlewares**: Supports global middleware functions for request modification, authentication, logging, error handling, etc.
 - **Session Support**: Provides a `SessionManager` that handles sessions and stores them in-memory.
 
+## Installation
+
+Clone the repository,
+```bash
+$ git clone --depth=1 https://github.com/al-rafi304/Bleu.git
+```
+Put the `core` directory from the repository into your project directory,
+```bash
+$ mv Bleu/core project-directory
+```
+Create an index.py file in the project directory and import the framework,
+```python
+from core.server import HTTPServer
+```
+
 ## Usage
 
 Here is an example of how to use the framework in `index.py`:
